@@ -22,9 +22,6 @@ Param(
 [string]$Subject,
 
 [Parameter(Mandatory=$True)]
-[string]$Exportable,
-
-[Parameter(Mandatory=$True)]
 [string]$SAN1,
 
 [Parameter(Mandatory=$False)]
@@ -39,11 +36,28 @@ Param(
 [Parameter(Mandatory=$False)]
 [string]$SAN5,
 
+[Parameter(Mandatory=$False)]
+[switch]$Exportable,
+
 [Parameter(Mandatory=$True)]
 [string]$Template
 
 )
 $ErrorActionPreference = 'Inquire'
+
+if ($Exportable){
+$Export = "True"
+}else {
+    $Export = "False"
+}
+
+#Enter Subject Variables Here and uncomment:
+#$O = ""
+#$OU = ""
+#$E = ""
+#$L = ""
+#$ST = ""
+#$C = ""
 
 ## Gathering Logic for SAN
 $SAN = ''
@@ -80,17 +94,9 @@ $inputfiletemplate = @"
 [Version] 
 Signature="$Windows NT$"
 
-##Enter Subject Variables Here and uncomment:
-# $O = [organization]
-# $OU = [Organizational Unit]
-# $E = [email]
-# $L = [locality]
-# $ST = [state]
-# $C = [country]
-
 [NewRequest] 
 Subject = "CN=$Subject, O=$O, OU=$OU, E=$E, L=$L, ST=$ST, C=$C"   ; For a wildcard use "CN=*.CONTOSO.COM" for example
-Exportable = $Exportable                  ; Private key is not exportable 
+Exportable = $Export                  ; Private key is not exportable 
 KeyLength = 2048                    ; Common key sizes: 512, 1024, 2048, 4096, 8192, 16384 
 KeySpec = 1                         ; AT_KEYEXCHANGE 
 KeyUsage = 0xA0                     ; Digital Signature, Key Encipherment 
@@ -116,13 +122,13 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
 CertificateTemplate=$Template
 "@
 
-$inf = Read-Host -prompt "Please enter a file name ending in .inf"
+$inf = Read-Host -prompt "Please enter a file name ending in .inf EX: c:\certs\test.inf"
 
 $inputfiletemplate | Out-File $inf
 
 $generate = Read-Host -prompt "Would you like to generate a request? Please enter Y or N"
 
-$req = Read-Host -prompt 'Please enter a file name ending in .req'
+$req = Read-Host -prompt 'Please enter a file name ending in .req EX: c:\certs\test.req'
 
 if ($generate -eq "y")
 {
